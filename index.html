@@ -165,6 +165,18 @@
             opacity: 0.8;
         }
 
+        .clip-item-username {
+            font-size: 0.85em;
+            margin-top: 3px;
+            opacity: 0.9;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .clip-item.active .clip-item-username {
+            color: #fff;
+        }
+
         .no-clips {
             text-align: center;
             padding: 40px 20px;
@@ -255,7 +267,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>Clip Viewer</h1>
+            <h1>📹 Screen Clip Viewer</h1>
             <p class="subtitle">View and manage your uploaded screen recordings</p>
             <div class="stats">
                 <div class="stat-box">
@@ -296,7 +308,7 @@
     </div>
 
     <script>
-        // Configuration
+        // Configuration - change this to your deployed backend URL
         const BACKEND_URL = 'https://clipperwebserviceapi-1.onrender.com';
         
         let clips = [];
@@ -340,11 +352,13 @@
                 const uploadDate = new Date(clip.upload_time);
                 const formattedDate = uploadDate.toLocaleString();
                 const fileSize = formatFileSize(clip.file_size);
+                const username = clip.username || 'Anonymous';
                 
                 return `
                     <div class="clip-item ${clip.clip_id === currentClipId ? 'active' : ''}" 
                          onclick="loadClip('${clip.clip_id}')">
                         <div class="clip-item-name">${clip.original_filename}</div>
+                        <div class="clip-item-username">👤 ${username}</div>
                         <div class="clip-item-time">📅 ${formattedDate}</div>
                         <div class="clip-item-size">💾 ${fileSize}</div>
                     </div>
@@ -372,6 +386,9 @@
                     <div class="clip-meta">
                         <span class="clip-meta-label">Filename:</span>
                         <span class="clip-meta-value">${clip.original_filename}</span>
+                        
+                        <span class="clip-meta-label">Uploaded by:</span>
+                        <span class="clip-meta-value">${clip.username || 'Anonymous'}</span>
                         
                         <span class="clip-meta-label">Clip ID:</span>
                         <span class="clip-meta-value">${clip.clip_id}</span>
