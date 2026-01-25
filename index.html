@@ -376,6 +376,10 @@
             const videoContainer = document.getElementById('videoContainer');
             const videoUrl = `${BACKEND_URL}/clips/${clipId}`;
             
+            // Update page title and URL
+            document.title = `${clip.original_filename} - Screen Clip Viewer`;
+            window.history.replaceState({}, '', `?id=${clipId}`);
+            
             videoContainer.innerHTML = `
                 <video controls autoplay>
                     <source src="${videoUrl}" type="video/mp4">
@@ -498,9 +502,41 @@
         // Check URL for clip parameter
         function checkUrlParams() {
             const urlParams = new URLSearchParams(window.location.search);
-            const clipId = urlParams.get('clip');
+            const clipId = urlParams.get('id') || urlParams.get('clip');
             if (clipId) {
-                loadClip(clipId);
+                // Wait a bit for clips to load, then select the clip
+                setTimeout(() => {
+                    const clip = clips.find(c => c.clip_id === clipId);
+                    if (clip) {
+                        loadClip(clipId);
+                    } else {
+                        // Clip might not be in list yet, try loading anyway
+                        loadClipById(clipId);
+                    }
+                }, 500);
+            }
+        }
+
+        // Load clip by ID even if not in list (direct link)
+        async function loadClipById(clipId) {
+            try {
+                const response = await fetch(`${BACKEND_URL}/clips`);
+                const data = await response.json();
+                
+                const clip = data.clips.find(c => c.clip_id === clipId);
+                if (clip) {
+                    clips = data.clips.sort((a, b) => 
+                        new Date(b.upload_time) - new Date(a.upload_time)
+                    );
+                    renderClips();
+                    updateStats();
+                    loadClip(clipId);
+                } else {
+                    showError(`Clip with ID "${clipId}" not found`);
+                }
+            } catch (error) {
+                showError('Failed to load clip');
+                console.error('Error loading clip:', error);
             }
         }
 
